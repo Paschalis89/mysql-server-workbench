@@ -1,0 +1,48 @@
+version: '3.7'
+networks:
+  mysql:
+    name: "mysql"
+
+services:
+  mysql-server:
+    container_name: "mysql-server"
+    restart: unless-stopped
+    image: mysql:8.0.20
+    environment:
+      MYSQL_DATABASE: 'db'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'password'
+    ports:
+        - 42333:3306
+    expose:
+      - '3306'
+    volumes:
+      - ./.mysql-data/db:/var/lib/mysql
+      - "./conf/my.cnf:/etc/mysql/my.cnf"
+    networks: ["mysql"]
+    command: --default-authentication-plugin=mysql_native_password
+
+
+  mysql-workbench:
+    image: openkbs/mysql-workbench
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mysql-workbench
+    environment:
+      - USER_ID=${USER_ID:-1000}
+      - GROUP_ID=${GROUP_ID:-1000}
+    env_file:
+      - ./docker.env
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - .mysql/workbench:/home/developer/.mysql/workbench
+#      - ${HOME}/.mysql/workbench:/home/developer/.mysql/workbench
+#      - ${HOME}/data-docker/mysql-workbench/workspace:/home/developer/workspace
+    networks: ["mysql"]
+
+volumes:
+  mysql-db:
+  workbench:
+    
